@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.lvnengbao.credit.manage.service.mapper.NplmBorrowerInfoMapper">
+    <resultMap id="cartMap" type="com.lvnengbao.credit.bean.NplmBorrowerInfo" autoMapping="true">
+        <id property="id" column="id"></id>
+
+        <collection property="nplmContractAttributeList" ofType="com.lvnengbao.credit.bean.NplmContractAttribute" autoMapping="true">
+        <id property="id" column="id"></id>
+        </collection>
+
+        <collection property="nplmLoanContractsList" ofType="com.lvnengbao.credit.bean.NplmLoanContract" autoMapping="true">
+            <id column="id" property="id"></id>
+        </collection>
+
+    </resultMap>
+    <select id="getNplmBorrowerInfo" resultMap="cartMap">
+        SELECT
+        *
+        FROM nplm_loan_contract c INNER JOIN nplm_contract_attribute b ON
+         c.`LOAN_CONTRACT_NUM` = b.`LOAN_CONTRACT_NUM` INNER JOIN  nplm_borrower_info a ON a.`id`= c.`ECIF_ID`
+        <where>
+         <if test="nplmBorrowerInfo.clientName != null and nplmBorrowerInfo.clientName != &quot;&quot;">
+             CLIENT_NAME = #{nplmBorrowerInfo.clientName}
+         </if>
+         </where>
+         LIMIT #{pageNum} ,#{rows} ;
+
+    </select>
+
+
+    <select id="getTotal" resultType="int" >
+        SELECT
+       count(*)
+        FROM nplm_loan_contract c INNER JOIN nplm_contract_attribute b ON
+        c.`LOAN_CONTRACT_NUM` = b.`LOAN_CONTRACT_NUM` INNER JOIN  nplm_borrower_info a ON a.`id`= c.`ECIF_ID`
+
+        <where>
+            <if test="nplmBorrowerInfo.clientName != null and nplmBorrowerInfo.clientName != &quot;&quot;">
+                CLIENT_NAME = #{nplmBorrowerInfo.clientName}
+            </if>
+        </where>
+    </select>
+
+</mapper>

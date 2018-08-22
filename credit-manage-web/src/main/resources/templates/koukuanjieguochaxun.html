@@ -1,0 +1,559 @@
+<body>
+<title>扣款结果查询</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="../ICPlatform/css/model.css" type="text/css">
+<link rel="stylesheet" href="../ICPlatform/css/model_info.css" type="text/css">
+<LINK rel=stylesheet type=text/css href="../smp_files/zTreeStyle.css">
+<link rel="stylesheet"  href="../ICPlatform/plugins/easyUI/themes/default/easyui.css" type="text/css">
+<link rel="stylesheet" href="../ICPlatform/plugins/easyUI/themes/icon.css" type="text/css">
+
+<script src="../ICPlatform/js/jquery-1.7.1.js" type="text/javascript"></script>
+<script src="../ICPlatform/js/easytooltip.js" type="text/javascript"></script>
+<script src="../ICPlatform/js/jquery.form.js" type="text/javascript"></script>
+<script src="../ICPlatform/plugins/easyUI/jquery.easyui.min.js" type="text/javascript"></script>
+<SCRIPT type=text/javascript src="../smp_files/easyui-lang-zh_CN.js"></SCRIPT>
+<link rel="stylesheet" type="text/css" href="../demo.css">
+
+
+
+<style type="text/css">
+    .td_1{font-size:12px;}
+
+</style>
+<style type="text/css">
+    td {
+        text-align: center;
+
+    }
+</style>
+<script>
+
+    $(function(){
+        var fromDate;
+
+        $('#idNumber').validatebox({
+            required: true,
+            validType: 'idcard'
+        });
+
+        //客户姓名和证件号验证
+        $.extend($.fn.validatebox.defaults.rules, {
+            idcard : {
+                validator : function(value) {
+                    return /^\d{15}(\d{2}[A-Za-z0-9])?$/i.test(value);
+                },
+                message : '证件号码格式不正确'
+            },
+            checkDateTime: {
+                validator : function(value, param) {
+                    fromDate = $(param[0]).val();
+                    if (fromDate!=""){
+                        if (fromDate.replace(/-/g,"") > value.replace(/-/g,"")){
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                },
+                message : '开始日期应小于结束日期'
+            }
+        });
+
+        var sValue = $("#loanKind").val();
+        $('#loanKindName').combobox({
+            onBeforeLoad: function(param){
+                if (sValue != ""){
+                    $('#loanKindName').combobox('select', [sValue]);
+                }
+            },
+            onSelect: function(rec){
+                $("#loanKind").val(rec.value);
+            }
+        });
+    });
+
+
+    //重置
+    function clearForm(){
+        $('#clientName').val("");
+        $('#contractId').val("");
+        $('#repaymentStart').val("");
+        $('#repaymentEnd').val("");
+        $('#ret_code_status').datebox('setValue', '');
+        $('#productsTypeName').datebox('setValue', '');
+        $('#productsTypeName').combobox('select', "");
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('table.datagrid-htable').find('.datagrid-cell').css("text-align", 'center');
+        $('table.datagrid-btable').find('.datagrid-row').css("text-align", 'center');
+        $('table.datagrid-btable').find('.datagrid-cell-c1-item_id10').css("text-align", 'right');
+        $('table.datagrid-btable').find('.datagrid-cell-c1-item_id11').css("text-align", 'right');
+        $('#cc').combotree('loadData', [{ id: 1, text: '收款银行', children: [
+            { id: 11, text: '民生银行' },
+            { id: 12, text: '广东发展银行' },
+            { id: 13, text: '深圳发展银行' },
+            { id: 14, text: '建设银行' },
+            { id: 15, text: '工商银行' },
+            { id: 16, text: '农业银行' },
+            { id: 17, text: '招商银行' }
+        ] }]);
+
+        $('#dd').combotree('loadData', [{ id: 1, text: '贷款品种', children: [
+            { id: 11, text: '新薪贷' },
+            { id: 12, text: '学信通' },
+            { id: 13, text: '精英贷' },
+            { id: 14, text: '助学贷' },
+            { id: 15, text: '助业贷' },
+            { id: 16, text: '助业宜楼贷' },
+            { id: 17, text: '新薪宜楼贷' },
+            { id: 17, text: '学历贷' },
+            { id: 17, text: '宜商贷' },
+            { id: 17, text: '宜车贷' },
+            { id: 17, text: '小企业贷' },
+            { id: 17, text: '房贷' },
+            { id: 17, text: '慧聪（高级）' },
+            { id: 17, text: '慧聪（三年）' },
+            { id: 17, text: '慧聪（普通）' }
+        ] }]);
+    });
+</script>
+<script>
+    $(function () {
+        // chkAll全选事件
+        $("#chkAll").bind("click", function () {
+            $("[name = chkItem]:checkbox").attr("checked", this.checked);
+        });
+
+        // chkItem事件
+        $("[name = chkItem]:checkbox").bind("click", function () {
+            var $chk = $("[name = chkItem]:checkbox");
+            $("#chkAll").attr("checked", $chk.length == $chk.filter(":checked").length);
+        })
+    });
+
+</script>
+<script language="javascript">
+
+    // --
+
+    列头全选框被单击
+
+    ---
+
+        function ChkAllClick(sonName, cbAllId){
+
+            var arrSon = document.getElementsByName(sonName);
+
+            var cbAll = document.getElementById(cbAllId);
+
+            var tempState=cbAll.checked;
+
+            for(i=0;i<arrSon.length;i++) {
+
+                if(arrSon[i].checked!=tempState)
+
+                    arrSon[i].click();
+
+            }
+
+        }
+
+    // --
+
+    子项复选框被单击
+
+    ---
+
+        function ChkSonClick(sonName, cbAllId) {
+
+            var arrSon = document.getElementsByName(sonName);
+
+            var cbAll = document.getElementById(cbAllId);
+
+            for(var i=0; i<arrSon.length; i++) {
+
+                if(!arrSon[i].checked) {
+
+                    cbAll.checked = false;
+
+                    return;
+
+                }
+
+            }
+
+            cbAll.checked = true;
+
+        }
+
+    // --
+
+    反选被单击
+
+    ---
+
+        function ChkOppClick(sonName){
+
+            var arrSon = document.getElementsByName(sonName);
+
+            for(i=0;i<arrSon.length;i++) {
+
+                arrSon[i].click();
+
+            }
+
+        }
+    function alert5(){
+        $.messager.alert('系统提示：','【结算平台消息】订单查询时发生错误：订单XXXX在系统中不存在！','warning');
+    }
+
+</script>
+<div>&nbsp;</div>
+<form id="searchForm" method="post">
+    <table style="height: auto; width: 100%;">
+        <tbody>
+
+        <tr>
+            <td width="8%" class="td_1">合同编号： </td>
+            <td width="25%">
+                <input id="contractId" name="contractId" style="width:188px;" value="">
+            </td>
+            <td width="8%" class="td_1">客户姓名： </td>
+            <td width="25%">
+                <input id="contractId" name="contractId" style="width:188px;" value="">
+            </td>
+            <td width="8%" class="td_1">证件号： </td>
+            <td width="25%">
+                <input id="contractId" name="contractId" style="width:188px;" value="">
+            </td>
+        </tr>
+        <tr>
+
+            <td width="8%" class="td_1">贷款品种： </td>
+            <td width="26%">
+                <select id="dd" class="easyui-combotree" data-options="" multiple style="width:195px;"></select>
+            </td>
+
+            <td width="10%" class="td_1">城市地区：</td>
+            <td width="20%">
+                <input  id="clientName" name="clientName" style="width:188px;" value="">
+                <input type="hidden" id="pPage" name="pageSize" value="">
+                <input type="hidden" id="pSize" name="pageSize" value="">
+                <input type="hidden" id="sysId" name="sysId" value="11">
+            </td>
+
+
+            <td width="10%" class="td_1">营业部：</td>
+            <td width="20%">
+                <input  id="clientName" name="clientName" style="width:188px;" value="">
+                <input type="hidden" id="pPage" name="pageSize" value="">
+                <input type="hidden" id="pSize" name="pageSize" value="">
+                <input type="hidden" id="sysId" name="sysId" value="11">
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td width="8%" class="td_1">订单编号： </td>
+            <td width="25%">
+                <input id="contractId" name="contractId" style="width:188px;" value="">
+            </td>
+            <td width="10%" class="td_1">订单状态：</td>
+            <td width="20%">
+                <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                    <option value="0">请选择</option>
+                    <option value="1">未请求</option>
+                    <option value="2">接收失败</option>
+                    <option value="3">接收成功</option>
+                    <option value="4">等待撤销</option>
+                    <option value="5">撤销成功</option>
+                    <option value="6">撤销失败</option>
+                    <option value="7">扣款成功</option>
+                    <option value="8">扣款部分成功</option>
+                    <option value="9">扣款失败</option>
+
+                </select>
+            </td>
+
+            <td width="8%" class="td_1">还款银行账号： </td>
+            <td width="25%">
+                <input id="contractId" name="contractId" style="width:188px;" value="">
+            </td>
+        </tr>
+        <tr>
+            <td width="8%" class="td_1">扣款完成时间： </td>
+            <td width="13%">
+                <input type="text" id="repaymentStart" style="width: 82px; display: none;" class="easyui-datetimebox" value="" comboname="repaymentStart">
+                -
+                <input type="text" id="repaymentEnd" style="width: 82px; display: none;" class="easyui-datetimebox" value="" data-options="validType:'checkDateTime[\'#searchForm input[name=repaymentStart]\']'" comboname="repaymentEnd">
+            </td>
+            <td width="8%" class="td_1">预约时间： </td>
+            <td width="13%">
+                <input type="text" id="repaymentStart" style="width: 82px; display: none;" class="easyui-datetimebox" value="" comboname="repaymentStart">
+                -
+                <input type="text" id="repaymentEnd" style="width: 82px; display: none;" class="easyui-datetimebox" value="" data-options="validType:'checkDateTime[\'#searchForm input[name=repaymentStart]\']'" comboname="repaymentEnd">
+            </td>
+
+            <td width="8%" class="td_1">业务模式： </td>
+            <td width="26%">
+                <select class="easyui-combobox combobox-f combo-f" id="ret_code_status" style="width: 190px; display: none;" editable="fales" comboname="productsTypeName">
+
+                    <option value="0">请选择</option>
+                    <option value="1">信托</option>
+                    <option value="2">转债权</option>
+                    <option value="3">融资租赁</option>
+                    <option value="4">火凤凰</option>
+                    <option value="5">互联网</option>
+
+                </select>
+
+            </td>
+
+
+        </tr>
+        <tr>
+            <td width="10%" class="td_1">信托机构：</td>
+            <td width="20%">
+                <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                    <option value="0">请选择</option>
+                    <option value="1">中航信托</option>
+                    <option value="2">华澳华宜</option>
+                    <option value="3">……</option>
+
+
+                </select>
+            </td>
+
+
+            <td width="10%" class="td_1">信托产品系列：</td>
+            <td width="20%">
+                <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                    <option value="0">请选择</option>
+                    <option value="1">天宜</option>
+                    <option value="2">天驰</option>
+                    <option value="3">天惠</option>
+                    <option value="4">……</option>
+
+
+                </select>
+            </td>
+
+            <td width="10%" class="td_1">信托计划：</td>
+            <td width="20%">
+                <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                    <option value="0">请选择</option>
+                    <option value="1">1号</option>
+                    <option value="2">2号</option>
+                    <option value="3">3号</option>
+                    <option value="4">4号</option>
+                    <option value="5">5号</option>
+                    <option value="6">6号</option>
+                    <option value="7">……</option>
+
+
+                </select>
+            </td>
+
+
+        </tr>
+        <td width="10%" class="td_1">还款银行：</td>
+        <td width="20%">
+            <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                <option value="0">请选择</option>
+                <option value="1">中国工商银行</option>
+                <option value="2">中国农业银行</option>
+                <option value="3">中国建设银行</option>
+                <option value="4">……</option>
+
+
+            </select>
+        </td>
+        <td width="10%" class="td_1"></td>
+        <td width="20%"></td>
+        <td width="10%" class="td_1"></td>
+        <td width="20%"></td>
+
+
+        <tr>
+
+
+        </tr>
+
+
+        <tr>
+            <!--td width="10%" class="td_1">是否火凤凰：</td>
+            <td width="20%">
+                <select class="easyui-combobox combobox-f combo-f" id="type" style="width: 195px; display: none;" editable="fales" name="type">
+                    <option value="0">请选择</option>
+                    <option value="1">全部</option>
+                    <option value="2">是</option>
+                    <option value="3">否</option>
+                        </select>
+            </td-->
+
+
+        </tr>
+        <tr>
+
+            <td width="8%" class="td_1">
+                快捷操作：
+            </td>
+            <td width="28%">
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'"
+                   onclick="javascript:alert('批量向结算发送查询收款结果请求')">查询收款结果</a>
+            </td>
+
+
+            <td width="10%" class="td_1"></td>
+            <td width="20%"></td>
+
+            <td width="5%" class="td_1"></td>
+
+            <td width="13%">
+                <a href="javascript:void(0)" class="easyui-linkbutton l-btn" onClick="searchInfo();" group="" id="">查询</a>
+                &nbsp;
+                <a href="javascript:void(0)" class="easyui-linkbutton l-btn" onClick="clearForm()" group="" id="">重置</a>
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td width="8%" class="td_1">
+                快捷操作：
+            </td>
+            <td width="28%">
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'"
+                   onclick="javascript:alert('批量重新向结算发送查询收款结果请求')">订单重发</a>
+            </td>
+
+        </tr>
+
+        </tbody>
+    </table>
+</form>
+
+<div>&nbsp;</div>
+<div class="panel datagrid" style="width: auto;">
+    <div class="panel-header" style="width: auto;"><div class="panel-title">扣款结果列表</div><div class="panel-tool"></div></div>
+    <div class="panel-tool"></div></div>
+
+<table id="tt" class="easyui-treegrid" style="width:auto;height:250px"
+       data-options="url:'get_data.php',idField:'id',treeField:'name'" pagination="true">
+    <thead>
+    <tr>
+
+        <th><input type="checkbox"  id="cboxchecked" /></th>
+
+
+        <th data-options="field:'item_id1',width:100">操作</th>
+        <th data-options="field:'item_id3',width:100">合同编号</th>
+        <th data-options="field:'item_id22',width:100">订单编号</th>
+        <th data-options="field:'item_id14',width:100">订单状态</th>
+        <th data-options="field:'item_id9',width:100">客户姓名</th>
+        <th data-options="field:'item_id19',width:150">证件号</th>
+        <th data-options="field:'item_id23',width:80">贷款品种</th>
+        <th data-options="field:'item_id24',width:100">城市地区</th>
+        <th data-options="field:'item_id25',width:100">营业部</th>
+        <th data-options="field:'item_id44',width:100">还款银行</th>
+        <th data-options="field:'item_id8',width:100">还款银行账号</th>
+        <th data-options="field:'item_id55',width:100">业务模式</th>
+        <th data-options="field:'item_id16',width:100">信托机构</th>
+        <th data-options="field:'item_id17',width:100">信托产品系列</th>
+        <th data-options="field:'item_id18',width:100">信托计划</th>
+
+        <th data-options="field:'item_id4',width:100">提前还款</th>
+        <th data-options="field:'item_id5',width:100">实时划扣</th>
+        <th data-options="field:'item_id6',width:130">预约时间</th>
+        <th data-options="field:'item_id10',width:100">预约金额</th>
+
+        <th data-options="field:'item_id7',width:130">扣款完成时间</th>
+        <th data-options="field:'item_id11',width:100">扣款金额</th>
+        <th data-options="field:'item_id21',width:100">回款账户</th>
+        <th data-options="field:'item_id12',width:100">结算状态</th>
+        <th data-options="field:'item_id13',width:100">状态描述</th>
+
+    </tr>
+
+    </thead>
+    <tbody>
+
+    <tr>
+
+        <td><input type="checkbox"  id="cboxchecked" /></td>
+
+        <td>
+
+            <a href="../common/查看还款情况页面.htm" onClick="window.open(this.href,    '_self',    'scrollbars=yes');return  false">查看还款情况</a>
+        </td>
+
+
+        <td>56565767</td>
+        <td>2345</td>
+        <td>接收失败</td>
+
+        <td>大天二</td>
+        <td>1111 2222 3333 44xx</td>
+        <td>学信贷</td>
+        <td>北京</td>
+
+        <td>北京东城营业部</td>
+        <td>工商银行</td>
+        <td>4567345678</td>
+        <td>信托</td>
+        <td>中航信托</td>
+        <td>天惠</td>
+        <td>1号</td>
+        <td>是</td>
+        <td>是</td>
+
+        <td>2014-04-21 12:32:22</td>
+        <td>￥3457.00</td>
+        <td>2014-04-21 12:32:22</td>
+        <td>￥98,999.90</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+
+        <td><input type="checkbox"  id="cboxchecked" /></td>
+        <td>
+
+            <a href="../common/查看还款情况页面.htm" onClick="window.open(this.href,    '_self',    'scrollbars=yes');return  false">查看还款情况</a>
+        </td>
+
+        <td>9875434</td>
+        <td>2345</td>
+        <td>接收成功</td>
+        <td>张三</td>
+        <td>6666 2222 3333 55xx</td>
+        <td>精英贷</td>
+        <td>上海</td>
+        <td>上海浦东营业部</td>
+        <td>建设银行</td>
+        <td>345678567</td>
+        <td>信托</td>
+        <td>中航信托</td>
+        <td>天驰</td>
+        <td>3号</td>
+        <td>否</td>
+        <td>否</td>
+
+        <td>2012-04-21 12:32:22</td>
+        <td>￥8888.00</td>
+        <td>2012-04-21 12:32:22</td>
+        <td>￥3,4567.90</td>
+        <td></td>
+        <td>交易成功</td>
+        <td>【结算平台消息】处理成功</td>
+    </tr>
+
+    </tbody>
+</table>
+</body></html>
